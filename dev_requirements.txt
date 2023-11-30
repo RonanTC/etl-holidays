@@ -1,0 +1,6 @@
+pytest
+pytest-testdox
+flake8
+coverage
+safety
+bandit
