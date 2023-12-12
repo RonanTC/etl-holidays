@@ -4,3 +4,4 @@ flake8
 coverage
 safety
 bandit
+moto[secretsmanager]

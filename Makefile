@@ -10,7 +10,7 @@ SHELL := /bin/bash
 ACTIVATE_VENV = source venv/bin/activate
 INSTALL_REQUIREMENTS = $(ACTIVATE_VENV) && pip install -r requirements.txt -q
 INSTALL_DEV_REQUIREMENTS = $(ACTIVATE_VENV) && pip install -r dev_requirements.txt -q
-SET_PYTHONPATH = PYTHONPATH=$(shell pwd)
+SET_PYTHONPATH = PYTHONPATH=$(shell pwd)/src
 
 ###############################################################################
 
@@ -50,6 +50,19 @@ security: venv
 	${SET_PYTHONPATH} bandit -lll src/**/*.py test/**/*.py
 
 
+# Create custom layer packages for lambdas
+createlayers:
+	pip install -r requirements.txt --target layers/generator/python/lib/python3.11/site-packages
+	mkdir tmp
+	cd layers/generator
+	zip -r9 ../../tmp/tmp_gen_layer.zip python
+
+
+# Deploy the generator lambda
+deploy-gen-dev: createlayers
+	terraform -chdir=terraform plan -var-file=vars.tfvars -out=../tmp/gen.plan
+	terraform -chdir=terraform apply -auto-approve ../tmp/gen.plan
+
 # Delete any temporary files and folders
 cleanup:
 	rm -rf venv
@@ -57,5 +70,8 @@ cleanup:
 	rm -rf **/**/__pycache__
 	rm -rf .pytest_cache
 	rm -f .coverage
+	rm -f tmp*.zip
+	rm -rf layers
+	rm -rf tmp
 
 ###############################################################################

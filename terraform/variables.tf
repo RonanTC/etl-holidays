@@ -9,3 +9,15 @@ variable "rds_oltp_pass" {
   sensitive = true
   nullable  = false
 }
+
+variable "rds_oltp_admin_usr" {
+  type      = string
+  sensitive = true
+  nullable  = false
+}
+
+variable "rds_oltp_admin_pass" {
+  type      = string
+  sensitive = true
+  nullable  = false
+}

@@ -1,7 +1,14 @@
 data "archive_file" "lambda" {
   type        = "zip"
   source_dir  = "${path.module}/../src/generator"
-  output_path = "${path.module}/../tmp_generator.zip"
+  output_path = "${path.module}/../tmp/tmp_gen_code.zip"
+}
+
+resource "aws_lambda_layer_version" "pg8000_layer" {
+  filename   = "${path.module}/../tmp/tmp_gen_layer.zip"
+  layer_name = "pg8000_layer"
+
+  compatible_runtimes = ["python3.11"]
 }
 
 data "aws_iam_policy_document" "assume_role_document" {
@@ -43,7 +50,7 @@ data "aws_iam_policy_document" "ec2_document" {
 }
 
 resource "aws_iam_policy" "cw_policy" {
-  name_prefix = "sm-policy-"
+  name_prefix = "cw-policy-"
   policy      = data.aws_iam_policy_document.cw_document.json
 }
 
@@ -72,9 +79,11 @@ resource "aws_lambda_function" "init_db" {
   filename      = data.archive_file.lambda.output_path
   function_name = "init_db"
   role          = aws_iam_role.generator_role.arn
-  handler       = "data_generator.init_db"
+  handler       = "initialisation.init_db"
   runtime       = "python3.11"
   timeout       = 180
+
+  layers = [aws_lambda_layer_version.pg8000_layer.arn]
 
   vpc_config {
     subnet_ids = [
@@ -84,9 +93,14 @@ resource "aws_lambda_function" "init_db" {
     ]
     security_group_ids = [aws_security_group.etl_hols_generator_sg.id]
   }
+
   environment {
     variables = {
-      env_var = "123"
+      DB_HOST : aws_db_instance.mock_oltp.address,
+      DB_NAME : aws_db_instance.mock_oltp.db_name,
+      DB_PORT : aws_db_instance.mock_oltp.port,
+      DB_USER : var.rds_oltp_usr,
+      DB_PASS : var.rds_oltp_pass
     }
   }
 }
@@ -96,7 +110,7 @@ data "aws_lambda_invocation" "init_db" {
 
   input = jsonencode(
     {
-      "test_key" : "test_value"
+      "test_input" : aws_db_instance.mock_oltp.db_name
     }
   )
 }
