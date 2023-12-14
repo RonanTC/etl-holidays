@@ -49,7 +49,7 @@ standards: venv
 # Check security for project code and dependencies
 security: venv
 	$(INSTALL_DEV_REQUIREMENTS)
-	${SET_PYTHONPATH} safety check
+	${SET_PYTHONPATH} safety check -r requirements.txt
 	${SET_PYTHONPATH} bandit -lll src/**/*.py test/**/*.py
 
 

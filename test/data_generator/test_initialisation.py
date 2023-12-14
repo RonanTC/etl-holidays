@@ -4,7 +4,7 @@ from moto import mock_secretsmanager
 from unittest.mock import patch, Mock, call
 import boto3
 import pytest
-import os
+import logging
 
 
 @pytest.fixture
@@ -27,6 +27,20 @@ def mocked_secretsmanager():
             Name="oltp_admin_pass", SecretString="oltp_admin_pass"
         )
         yield sm
+
+
+@pytest.fixture
+def mocked_logger():
+    """Return a default logger for testing. This exists so that custom_logger
+    does not need to be used while the tests are executing, since its setup
+    conflicts with pytest's caplog fixture.
+
+    Yields:
+        Logger: dummy logger to test error logging.
+    """
+    with patch("generator.initialisation.custom_logger") as logger:
+        logger.return_value = logging.getLogger("test_logger")
+        yield logger
 
 
 # init_db
@@ -53,7 +67,7 @@ def test_init_db_calls_create_db_and_create_schema(
     }
 
 
-def test_init_db_logs_error_when_no_env_variables(caplog):
+def test_init_db_logs_error_when_no_env_variables(mocked_logger, caplog):
     response = init_db(None, None)
 
     assert caplog.records[-1].levelname == "ERROR"
@@ -70,7 +84,7 @@ def test_init_db_logs_error_when_no_env_variables(caplog):
 
 @patch("generator.initialisation.create_db")
 def test_init_db_logs_error_on_exception(
-    patched_create_db, dummy_env_vars, caplog
+    patched_create_db, dummy_env_vars, mocked_logger, caplog
 ):
     patched_create_db.side_effect = Exception("An error")
 
@@ -121,7 +135,7 @@ def test_create_db_creates_db_user_and_if_they_dont_exists(
 
     expected_calls = [
         call(f"CREATE USER {db_usr} WITH PASSWORD '{db_pass}';"),
-        call(f"GRANT {db_usr} TO {os.environ['DB_USER']};"),
+        call(f"GRANT {db_usr} TO oltp_admin_user;"),
         call(f"CREATE DATABASE {db_name} OWNER = {db_usr};"),
     ]
 
@@ -131,7 +145,7 @@ def test_create_db_creates_db_user_and_if_they_dont_exists(
 
 
 @patch("generator.initialisation.boto3.client")
-def test_create_db_logs_error_on_exception(patched_sm, caplog):
+def test_create_db_logs_error_on_exception(patched_sm, mocked_logger, caplog):
     patched_sm.side_effect = Exception("An error")
     create_db(None, None, None)
 
@@ -206,7 +220,7 @@ def test_create_schema_does_nothing_if_db_exists(
 
 @patch("generator.initialisation.connect")
 def test_create_schema_logs_error_on_exception(
-    patched_connect, dummy_env_vars, caplog
+    patched_connect, dummy_env_vars, mocked_logger, caplog
 ):
     patched_connect.side_effect = Exception("An error")
     create_schema(None, None, None)
