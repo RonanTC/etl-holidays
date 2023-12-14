@@ -12,6 +12,8 @@ jobs:
           python-version: "3.11"
       - name: standards check
         run: make standards
+      - name: security check
+        run: make security
 
   unit_tests:
     needs: standards
