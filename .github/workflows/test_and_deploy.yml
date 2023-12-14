@@ -44,10 +44,13 @@ jobs:
         uses: hashicorp/setup-terraform@v2
       - name: Terraform init
         run: terraform -chdir=./terraform init
-      - name: Terraform plan
-        run: >
-          terraform -chdir=./terraform plan
-          -var="rds_oltp_admin_usr=${{secrets.RDS_OLTP_ADMIN_USR}}"
-          -var="rds_oltp_admin_pass=${{secrets.RDS_OLTP_ADMIN_PASS}}"
-          -var="rds_oltp_usr=${{secrets.RDS_OLTP_USR}}"
-          -var="rds_oltp_pass=${{secrets.RDS_OLTP_PASS}}"
+      - name: terraform-plan
+        uses: dflook/terraform-plan@v1.38.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          variables: |
+            rds_oltp_admin_usr = "${{secrets.RDS_OLTP_ADMIN_USR}}"
+            rds_oltp_admin_pass = "${{secrets.RDS_OLTP_ADMIN_PASS}}"
+            rds_oltp_usr = "${{secrets.RDS_OLTP_USR}}"
+            rds_oltp_pass = "${{secrets.RDS_OLTP_PASS}}"
