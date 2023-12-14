@@ -1,0 +1,32 @@
+name: PR plan
+
+on: [pull_request]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create_plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - name: terraform-plan
+        uses: dflook/terraform-plan@v1.38.0
+        with:
+          path: terraform
+          variables: |
+            rds_oltp_admin_usr = "${{secrets.RDS_OLTP_ADMIN_USR}}"
+            rds_oltp_admin_pass = "${{secrets.RDS_OLTP_ADMIN_PASS}}"
+            rds_oltp_usr = "${{secrets.RDS_OLTP_USR}}"
+            rds_oltp_pass = "${{secrets.RDS_OLTP_PASS}}"
