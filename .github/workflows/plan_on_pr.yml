@@ -24,7 +24,7 @@ jobs:
       - name: terraform-plan
         uses: dflook/terraform-plan@v1.38.0
         with:
-          path: ./terraform
+          path: terraform
           variables: |
             rds_oltp_admin_usr = "${{secrets.RDS_OLTP_ADMIN_USR}}"
             rds_oltp_admin_pass = "${{secrets.RDS_OLTP_ADMIN_PASS}}"
