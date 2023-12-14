@@ -1,0 +1,55 @@
+name: test and standards check
+on: push
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: standards check
+        run: make standards
+      - name: security check
+        run: make security
+
+  unit_tests:
+    needs: standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: standards check
+        run: make pytest
+
+  deploy:
+    needs: unit_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            RDS_OLTP_ADMIN_USR: ${{ secrets.RDS_OLTP_ADMIN_USR }}
+            RDS_OLTP_ADMIN_PASS: ${{ secrets.RDS_OLTP_ADMIN_PASS }}
+            RDS_OLTP_USR: ${{ secrets.RDS_OLTP_USR }}
+            RDS_OLTP_PASS: ${{ secrets.RDS_OLTP_PASS }}
+            aws-region: eu-west-2
+      - name: Setup terraform
+          uses: hashicorp/setup-terraform@v2
+      - name: Terraform init
+          run: terraform -chdir=./terraform init
+      - name: Terraform plan
+          run: >
+            terraform -chdir=./terraform plan
+            -var="rds_oltp_admin_usr=${{secrets.RDS_OLTP_ADMIN_USR}}"
+            -var="rds_oltp_admin_pass=${{secrets.RDS_OLTP_ADMIN_PASS}}"
+            -var="rds_oltp_usr=${{secrets.RDS_OLTP_USR}}"
+            -var="rds_oltp_pass=${{secrets.RDS_OLTP_PASS}}"

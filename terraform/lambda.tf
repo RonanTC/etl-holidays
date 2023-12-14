@@ -132,16 +132,16 @@ resource "aws_cloudwatch_log_group" "db_init_log_group" {
   depends_on = [aws_lambda_function.init_db]
 }
 
-# data "aws_lambda_invocation" "init_db" {
-#   function_name = aws_lambda_function.init_db.function_name
+data "aws_lambda_invocation" "init_db" {
+  function_name = aws_lambda_function.init_db.function_name
 
-#   input = jsonencode(
-#     {
-#       "test_input" : aws_db_instance.mock_oltp.db_name
-#     }
-#   )
-# }
+  input = jsonencode(
+    {
+      "test_input" : aws_db_instance.mock_oltp.db_name
+    }
+  )
+}
 
-# output "db_init_result" {
-#   value = jsondecode(data.aws_lambda_invocation.init_db.result)
-# }
+output "db_init_result" {
+  value = jsondecode(data.aws_lambda_invocation.init_db.result)
+}
