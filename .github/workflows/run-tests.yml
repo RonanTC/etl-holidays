@@ -3,25 +3,25 @@ on: push
 jobs:
   standards:
     runs-on: ubuntu-latest
-      steps:
-        - name: checkout
-          uses: actions/checkout@v4
-        - name: Set up Python 3.11
-          uses: actions/setup-python@v4
-          with:
-            python-version: "3.11"
-        - name: standards check
-          run: make standards
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: standards check
+        run: make standards
 
   unit_tests:
     needs: standards
     runs-on: ubuntu-latest
-      steps:
-        - name: checkout
-          uses: actions/checkout@v4
-        - name: Set up Python 3.11
-          uses: actions/setup-python@v4
-          with:
-            python-version: "3.11"
-        - name: standards check
-          run: make pytest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: standards check
+        run: make pytest
