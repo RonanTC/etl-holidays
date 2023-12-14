@@ -43,13 +43,13 @@ jobs:
           RDS_OLTP_PASS: ${{ secrets.RDS_OLTP_PASS }}
           aws-region: eu-west-2
       - name: Setup terraform
-          uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v2
       - name: Terraform init
-          run: terraform -chdir=./terraform init
+        run: terraform -chdir=./terraform init
       - name: Terraform plan
-          run: >
-            terraform -chdir=./terraform plan
-            -var="rds_oltp_admin_usr=${{secrets.RDS_OLTP_ADMIN_USR}}"
-            -var="rds_oltp_admin_pass=${{secrets.RDS_OLTP_ADMIN_PASS}}"
-            -var="rds_oltp_usr=${{secrets.RDS_OLTP_USR}}"
-            -var="rds_oltp_pass=${{secrets.RDS_OLTP_PASS}}"
+        run: >
+          terraform -chdir=./terraform plan
+          -var="rds_oltp_admin_usr=${{secrets.RDS_OLTP_ADMIN_USR}}"
+          -var="rds_oltp_admin_pass=${{secrets.RDS_OLTP_ADMIN_PASS}}"
+          -var="rds_oltp_usr=${{secrets.RDS_OLTP_USR}}"
+          -var="rds_oltp_pass=${{secrets.RDS_OLTP_PASS}}"
