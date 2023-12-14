@@ -51,7 +51,7 @@ def create_db(db_usr, db_pass, db_name):
     response = "Not executed"
 
     try:
-        sm_client = boto3.client("secretsmanager")
+        sm_client = boto3.client("secretsmanager", "eu-west-2")
 
         admin_user = sm_client.get_secret_value(SecretId="oltp_admin_user")
         admin_pass = sm_client.get_secret_value(SecretId="oltp_admin_pass")

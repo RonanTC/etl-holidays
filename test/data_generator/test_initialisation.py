@@ -19,7 +19,7 @@ def dummy_env_vars(monkeypatch):
 @pytest.fixture
 def mocked_secretsmanager():
     with mock_secretsmanager():
-        sm = boto3.client("secretsmanager")
+        sm = boto3.client("secretsmanager", "eu-west-2")
         sm.create_secret(
             Name="oltp_admin_user", SecretString="oltp_admin_user"
         )
