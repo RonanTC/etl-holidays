@@ -11,6 +11,7 @@ ACTIVATE_VENV = source venv/bin/activate
 INSTALL_REQUIREMENTS = $(ACTIVATE_VENV) && pip install -r requirements.txt -q
 INSTALL_DEV_REQUIREMENTS = $(ACTIVATE_VENV) && pip install -r dev_requirements.txt -q
 SET_PYTHONPATH = PYTHONPATH=$(shell pwd)
+COVERAGE_TARGET = 95
 
 ###############################################################################
 
@@ -40,7 +41,7 @@ pytest: venv
 standards: venv
 	$(INSTALL_DEV_REQUIREMENTS)
 	${SET_PYTHONPATH} flake8 -v src/**/*.py test/**/*.py
-	${SET_PYTHONPATH} coverage run --omit 'venv/*' -m pytest --testdox && coverage report -m
+	${SET_PYTHONPATH} coverage run --omit 'venv/*' -m pytest --testdox && coverage report -m --fail-under=${COVERAGE_TARGET}
 
 
 # Check security for project code and dependencies
