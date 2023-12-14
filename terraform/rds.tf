@@ -1,6 +1,8 @@
 resource "aws_vpc" "etl_hols_vpc" {
   cidr_block = "10.0.0.0/16"
 
+  enable_dns_hostnames = true
+
   tags = {
     Name = "etl-hols"
   }
@@ -42,7 +44,7 @@ resource "aws_security_group" "etl_hols_generator_sg" {
   vpc_id      = aws_vpc.etl_hols_vpc.id
 }
 
-resource "aws_vpc_security_group_egress_rule" "vpc_egress_rule" {
+resource "aws_vpc_security_group_egress_rule" "postgres_egress_rule" {
   security_group_id = aws_security_group.etl_hols_generator_sg.id
 
   cidr_ipv4   = "0.0.0.0/0"
@@ -51,13 +53,44 @@ resource "aws_vpc_security_group_egress_rule" "vpc_egress_rule" {
   to_port     = 5432
 }
 
-resource "aws_vpc_security_group_ingress_rule" "vpc_ingress_rule" {
+resource "aws_vpc_security_group_ingress_rule" "postgres_ingress_rule" {
   security_group_id = aws_security_group.etl_hols_generator_sg.id
 
   cidr_ipv4   = "0.0.0.0/0"
   from_port   = 5432
   ip_protocol = "tcp"
   to_port     = 5432
+}
+
+resource "aws_vpc_security_group_ingress_rule" "secrets_ingress_rule" {
+  security_group_id = aws_security_group.etl_hols_generator_sg.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 443
+  ip_protocol = "tcp"
+  to_port     = 443
+}
+
+resource "aws_vpc_security_group_egress_rule" "secrets_egress_rule" {
+  security_group_id = aws_security_group.etl_hols_generator_sg.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 443
+  ip_protocol = "tcp"
+  to_port     = 443
+}
+
+resource "aws_vpc_endpoint" "sm_endpoint" {
+  vpc_id              = aws_vpc.etl_hols_vpc.id
+  service_name        = "com.amazonaws.${var.region}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.etl_hols_generator_sg.id]
+  private_dns_enabled = true
+  subnet_ids = [
+    aws_subnet.etl_hols_subnet_a.id,
+    aws_subnet.etl_hols_subnet_b.id,
+    aws_subnet.etl_hols_subnet_c.id
+  ]
 }
 
 resource "aws_db_instance" "mock_oltp" {
@@ -65,8 +98,8 @@ resource "aws_db_instance" "mock_oltp" {
   engine              = "postgres"
   db_name             = "etlhols"
   instance_class      = "db.t3.micro"
-  username            = var.rds_oltp_usr
-  password            = var.rds_oltp_pass
+  username            = var.rds_oltp_admin_usr
+  password            = var.rds_oltp_admin_pass
   skip_final_snapshot = true
   identifier_prefix   = "etl-hols-oltp-"
 

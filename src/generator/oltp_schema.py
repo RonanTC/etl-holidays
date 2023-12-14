@@ -1,6 +1,32 @@
 db_schema_str = """
+CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
+    customer_name VARCHAR(64)
+);
+
+CREATE TABLE countries (
+    country_id SERIAL PRIMARY KEY,
+    country_name VARCHAR(64)
+);
+
+CREATE TABLE locations (
+    location_id SERIAL PRIMARY KEY,
+    location_name VARCHAR(64),
+    country_id INT REFERENCES countries(country_id)
+);
+
+CREATE TABLE sales (
+    sale_id SERIAL PRIMARY KEY,
+    order_date DATE,
+    price_paid NUMERIC(10, 2),
+    customer_id INT REFERENCES customers(customer_id),
+    location_id INT REFERENCES locations(location_id)
+);
+"""
+
+seed_values_str = """
 INSERT INTO countries
-(location_name)
+(country_name)
 VALUES
 ('Antigua'),
 ('Argentina'),
@@ -35,9 +61,7 @@ VALUES
 ('Turks and Caicos Islands'),
 ('United States'),
 ('Vietnam');
-"""
 
-seed_values_str = """
 INSERT INTO locations
 (location_name, country_id)
 VALUES

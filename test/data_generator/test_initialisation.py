@@ -38,11 +38,19 @@ def mocked_secretsmanager():
 def test_init_db_calls_create_db_and_create_schema(
     patched_create_db, patched_create_schema, dummy_env_vars
 ):
+    patched_create_db.return_value = "Created"
+    patched_create_schema.return_value = "Created"
     response = init_db(None, None)
 
-    patched_create_db.assert_called_once_with("usr", "pass", "name")
-    patched_create_schema.assert_called_once_with("usr", "pass", "name")
-    assert response == {"Result": "Success"}
+    patched_create_db.assert_called_once_with("usr", "pass", "etlhols_oltp")
+    patched_create_schema.assert_called_once_with(
+        "usr", "pass", "etlhols_oltp"
+    )
+    assert response == {
+        "Result": "Success",
+        "create_db": "Created",
+        "create_schema": "Created",
+    }
 
 
 def test_init_db_logs_error_when_no_env_variables(caplog):
@@ -53,7 +61,11 @@ def test_init_db_logs_error_when_no_env_variables(caplog):
         "Required environment variables missing: "
         "['DB_USER', 'DB_PASS', 'DB_NAME', 'DB_HOST', 'DB_PORT']"
     )
-    assert response == {"Result": "Error"}
+    assert response == {
+        "Result": "Error",
+        "create_db": "Not attempted",
+        "create_schema": "Not attempted",
+    }
 
 
 @patch("generator.initialisation.create_db")
@@ -66,7 +78,11 @@ def test_init_db_logs_error_on_exception(
 
     assert caplog.records[-1].levelname == "ERROR"
     assert caplog.records[-1].message == "An error"
-    assert response == {"Result": "Error"}
+    assert response == {
+        "Result": "Error",
+        "create_db": "Not attempted",
+        "create_schema": "Not attempted",
+    }
 
 
 # create_db

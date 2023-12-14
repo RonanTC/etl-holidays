@@ -1,3 +1,8 @@
+variable "region" {
+  type = string
+  default = "eu-west-2"
+}
+
 variable "rds_oltp_usr" {
   type      = string
   sensitive = true

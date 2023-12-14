@@ -22,6 +22,8 @@ help:
 	@echo "make standards : run flake8 and coverage"
 	@echo "make security : run safefy and bandit"
 	@echo "make cleanup : delete temporary files and venv"
+	@echo "make createlayers : create layer files for lambda deployment"
+	@echo "deploy-gen-dev : deploy the data generator lambda with the development environment"
 
 
 # Create virtual environment and install project requirements
